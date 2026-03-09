@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>チャット書式ジェネレーター</title>
+    <title>書式変更ツール</title>
     <style>
         /* 全体の基本設定 */
         body {
@@ -22,7 +22,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 600px;
+            max-width: 650px;
             box-sizing: border-box;
         }
 
@@ -34,7 +34,9 @@
         }
 
         label.section-title {
-            display: block;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
             margin-top: 15px;
             font-weight: bold;
             font-size: 0.95rem;
@@ -44,11 +46,30 @@
             margin-bottom: 10px;
         }
 
+        .char-count {
+            font-weight: normal;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .warning-text {
+            color: #e53935;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: none;
+            background: #ffebee;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ffcdd2;
+        }
+
         /* ツールバーのスタイル */
         .toolbar {
             display: flex;
             flex-wrap: wrap;
-            gap: 5px;
+            align-items: center;
+            gap: 8px;
             background: #f8f9fa;
             padding: 10px;
             border-radius: 6px 6px 0 0;
@@ -56,7 +77,7 @@
             border-bottom: none;
         }
 
-        .toolbar button {
+        .toolbar button.format-btn {
             padding: 8px 12px;
             font-size: 1.1rem;
             cursor: pointer;
@@ -66,18 +87,51 @@
             color: #333;
         }
 
-        .toolbar button:hover {
+        .toolbar button.format-btn:hover {
             background: #e9ecef;
         }
 
-        .toolbar input[type="color"] {
+        /* 色選択グループのスタイル */
+        .color-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #fff;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 0.85rem;
+        }
+
+        .color-group span.label {
+            color: #666;
+            font-weight: bold;
+            margin-right: 2px;
+        }
+
+        .color-group input[type="color"] {
             border: 1px solid #ddd;
             border-radius: 4px;
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             cursor: pointer;
             padding: 0;
             background: white;
+        }
+
+        .color-group button.apply-btn {
+            font-size: 0.85rem;
+            padding: 6px 10px;
+            font-weight: bold;
+            color: #007bff;
+            border: 1px solid #007bff;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .color-group button.apply-btn:hover {
+            background: #e6f2ff;
         }
 
         /* エディタ（入力エリア）のスタイル */
@@ -100,7 +154,6 @@
             box-shadow: inset 0 0 0 1px #007bff;
         }
 
-        /* プレースホルダー（未入力時の文字） */
         #editor:empty:before {
             content: attr(data-placeholder);
             color: #aaa;
@@ -125,7 +178,6 @@
         }
 
         .result-container {
-            margin-top: 20px;
             background: #282c34;
             color: #abb2bf;
             padding: 15px;
@@ -157,6 +209,13 @@
             background: #45a049;
         }
 
+        .hint-text {
+            font-size: 0.8rem;
+            color: #e91e63;
+            margin: 5px 0 10px 0;
+            font-weight: bold;
+        }
+
         @media (min-width: 600px) {
             h1 { font-size: 1.6rem; }
             body { padding: 40px 20px; }
@@ -166,28 +225,48 @@
 <body>
 
     <div class="container">
-        <h1>🎮 チャット書式ジェネレーター</h1>
+        <h1>りおにゃんの書式コードジェネレーター</h1>
 
         <label class="section-title">1. テキストを入力して装飾する</label>
-        <p style="font-size: 0.85rem; color: #666; margin: 0 0 10px 0;">文字を選択してからボタンを押してください。すでにかかっている装飾は、もう一度押すと外れます。</p>
+        <p style="font-size: 0.85rem; color: #666; margin: 0 0 5px 0;">文字を選択してから各ボタンを押してください。</p>
+        <p class="hint-text">💡 グラデーションは他の装飾をリセットするので、先に反映させてから太字(B)などをかけるのがおすすめです！</p>
         
-        <!-- ツールバー -->
         <div class="toolbar">
-            <button onclick="formatText('bold')" title="太線"><b>B</b></button>
-            <button onclick="formatText('italic')" title="斜体"><i>I</i></button>
-            <button onclick="formatText('underline')" title="下線"><u>U</u></button>
-            <button onclick="formatText('strikeThrough')" title="横線"><s>S</s></button>
-            <button onclick="formatText('superscript')" title="上付き文字">x<sup>2</sup></button>
-            <button onclick="formatText('subscript')" title="下付き文字">x<sub>2</sub></button>
-            <input type="color" id="colorPicker" onchange="formatText('foreColor', this.value)" title="文字色">
+            <button class="format-btn" onclick="formatText('bold')" title="太線"><b>B</b></button>
+            <button class="format-btn" onclick="formatText('italic')" title="斜体"><i>I</i></button>
+            <button class="format-btn" onclick="formatText('underline')" title="下線"><u>U</u></button>
+            <button class="format-btn" onclick="formatText('strikeThrough')" title="横線"><s>S</s></button>
+            <button class="format-btn" onclick="formatText('superscript')" title="上付き文字">x<sup>2</sup></button>
+            <button class="format-btn" onclick="formatText('subscript')" title="下付き文字">x<sub>2</sub></button>
+            
+            <div class="color-group">
+                <span class="label">単色:</span>
+                <input type="color" id="singleColorPicker" value="#ff0000" title="文字色">
+                <button class="apply-btn" onclick="applySingleColor()">反映</button>
+            </div>
+
+            <div class="color-group">
+                <span class="label">グラデ:</span>
+                <input type="color" id="gradStart" value="#ff0000" title="開始色">
+                <span>〜</span>
+                <input type="color" id="gradEnd" value="#0000ff" title="終了色">
+                <button class="apply-btn" onclick="applyGradient()">反映</button>
+            </div>
         </div>
 
-        <!-- エディタ（ここで見た目が変わります） -->
         <div id="editor" contenteditable="true" data-placeholder="ここに文字を入力してください"></div>
 
         <button class="generate-btn" onclick="generateCode()">コマンドを生成する</button>
 
-        <label class="section-title">2. 生成されたコード</label>
+        <label class="section-title">
+            2. 生成されたコード
+            <span id="charCount" class="char-count">0文字</span>
+        </label>
+        
+        <div id="warningMsg" class="warning-text">
+            ⚠️ 注意：コードが1000文字を超えています！ゲーム内で文字数オーバーになる可能性があります。
+        </div>
+
         <div class="result-container">
             <button class="copy-btn" onclick="copyToClipboard()">コピー</button>
             <div id="resultText" class="result-text">ここにコードが表示されます</div>
@@ -195,16 +274,79 @@
     </div>
 
     <script>
-        // エディタの装飾ボタン用関数
-        function formatText(command, value = null) {
-            document.execCommand(command, false, value);
+        // 一般的な装飾
+        function formatText(command) {
+            document.execCommand(command, false, null);
             document.getElementById('editor').focus();
         }
 
-        // RGB形式の色を16進数（HEX）に変換する関数
+        // 単色の反映
+        function applySingleColor() {
+            const color = document.getElementById('singleColorPicker').value;
+            document.execCommand('foreColor', false, color);
+            document.getElementById('editor').focus();
+        }
+
+        // グラデーションの反映
+        function applyGradient() {
+            const sel = window.getSelection();
+            if (sel.isCollapsed) {
+                alert("グラデーションをかけたい文字を選択してください！");
+                return;
+            }
+
+            const startColor = document.getElementById('gradStart').value;
+            const endColor = document.getElementById('gradEnd').value;
+
+            const r1 = parseInt(startColor.substr(1, 2), 16);
+            const g1 = parseInt(startColor.substr(3, 2), 16);
+            const b1 = parseInt(startColor.substr(5, 2), 16);
+
+            const r2 = parseInt(endColor.substr(1, 2), 16);
+            const g2 = parseInt(endColor.substr(3, 2), 16);
+            const b2 = parseInt(endColor.substr(5, 2), 16);
+
+            const text = sel.toString();
+            let resultHTML = "";
+            let charCount = 0;
+            
+            for (let i = 0; i < text.length; i++) {
+                if (text[i].trim() !== '') charCount++;
+            }
+
+            let currentIndex = 0;
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                
+                if (char === '\n') {
+                    resultHTML += '<br>';
+                    continue;
+                }
+                if (char === ' ' || char === '　') {
+                    resultHTML += char;
+                    continue;
+                }
+
+                const ratio = charCount > 1 ? currentIndex / (charCount - 1) : 0;
+                
+                const r = Math.round(r1 + (r2 - r1) * ratio);
+                const g = Math.round(g1 + (g2 - g1) * ratio);
+                const b = Math.round(b1 + (b2 - b1) * ratio);
+
+                const hexR = r.toString(16).padStart(2, '0');
+                const hexG = g.toString(16).padStart(2, '0');
+                const hexB = b.toString(16).padStart(2, '0');
+
+                resultHTML += `<span style="color: #${hexR}${hexG}${hexB};">${char}</span>`;
+                currentIndex++;
+            }
+
+            document.execCommand('insertHTML', false, resultHTML);
+            document.getElementById('editor').focus();
+        }
+
         function rgbToHex(color) {
             if (color.startsWith('#')) {
-                // 3桁のHEX（例：#f00）を6桁（#ff0000）に直す
                 if (color.length === 4) {
                     return '#' + color[1] + color[1] + color[2] + color[2] + color[3] + color[3];
                 }
@@ -218,14 +360,11 @@
             return null;
         }
 
-        // HTML要素を解析してゲーム用のタグに変換する再帰関数
         function parseNode(node) {
-            // テキストノードの場合はそのまま文字を返す
             if (node.nodeType === Node.TEXT_NODE) {
                 return node.textContent;
             }
 
-            // 要素ノード（タグ）以外は無視
             if (node.nodeType !== Node.ELEMENT_NODE) {
                 return '';
             }
@@ -234,7 +373,6 @@
             let colorHex = null;
             const tag = node.tagName.toLowerCase();
 
-            // タグ名からスタイルを判定
             if (tag === 'b' || tag === 'strong') styles.add('B');
             if (tag === 'i' || tag === 'em') styles.add('I');
             if (tag === 'u') styles.add('U');
@@ -242,12 +380,10 @@
             if (tag === 'sup') styles.add('SUP');
             if (tag === 'sub') styles.add('SUB');
 
-            // 属性から色を判定（古いブラウザ仕様対応）
             if (tag === 'font' && node.color) {
                 colorHex = rgbToHex(node.color);
             }
 
-            // style属性からスタイルを判定
             if (node.style) {
                 if (node.style.fontWeight === 'bold' || parseInt(node.style.fontWeight) >= 700) styles.add('B');
                 if (node.style.fontStyle === 'italic') styles.add('I');
@@ -263,22 +399,18 @@
             let suffix = '';
             const tagBase = "[-[#C0]]";
 
-            // 抽出したスタイルをもとにゲーム用のタグを組み立て
             const appliedStyles = Array.from(styles);
             for (let s of appliedStyles) {
                 prefix += `[${tagBase}${s}]`;
-                suffix = `[/${tagBase}${s}]` + suffix; // 閉じる時は逆順
+                suffix = `[/${tagBase}${s}]` + suffix;
             }
 
-            // 色のタグを組み立て [RR[-[#C0]]GGBB]
             if (colorHex) {
                 const rr = colorHex.substring(1, 3).toUpperCase();
                 const ggbb = colorHex.substring(3, 7).toUpperCase();
                 prefix += `[${rr}${tagBase}${ggbb}]`;
-                // 色タグは終了タグの仕様がないため、開始タグのみ付与
             }
 
-            // 子要素を再帰的に処理
             let innerText = '';
             for (let child of node.childNodes) {
                 innerText += parseNode(child);
@@ -287,7 +419,6 @@
             return prefix + innerText + suffix;
         }
 
-        // コマンド生成メイン関数
         function generateCode() {
             const editor = document.getElementById('editor');
             
@@ -296,12 +427,28 @@
                 return;
             }
 
-            // エディタの中身を解析してタグに変換
             const finalCode = parseNode(editor);
             document.getElementById('resultText').innerText = finalCode;
+
+            // 文字数のカウントと表示
+            const count = finalCode.length;
+            const charCountElement = document.getElementById('charCount');
+            const warningMsgElement = document.getElementById('warningMsg');
+
+            charCountElement.innerText = `${count}文字`;
+
+            // 1000文字を超えた場合の処理
+            if (count > 1000) {
+                charCountElement.style.color = '#e53935';
+                charCountElement.style.fontWeight = 'bold';
+                warningMsgElement.style.display = 'block';
+            } else {
+                charCountElement.style.color = '#666';
+                charCountElement.style.fontWeight = 'normal';
+                warningMsgElement.style.display = 'none';
+            }
         }
 
-        // コピー機能
         function copyToClipboard() {
             const resultText = document.getElementById('resultText').innerText;
             if (resultText === "ここにコードが表示されます" || !resultText) return;
