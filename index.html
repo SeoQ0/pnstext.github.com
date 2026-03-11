@@ -274,6 +274,30 @@
     </div>
 
     <script>
+        // ==========================================
+        // ★スプレッドシートへログを送信する関数★
+        // ==========================================
+		function sendLogToSpreadsheet(codeText) {
+		// ★ここにGASのウェブアプリURLを貼り付けます★
+		const endpoint = "https://script.google.com/macros/s/AKfycbzhenB08aTgcD2NXX23D66CIJrS4T6lzb5drDriZEKNkgJdNuh0jGeW5_XYME5Zb8xFSg/exec";
+		
+		// データを送信できる形式に変換
+		const params = new URLSearchParams();
+		params.append('text', codeText);
+		
+		// 裏側でこっそり送信（fetch通信）
+		fetch(endpoint, {
+			method: 'POST',
+			body: params
+		})
+		.then(response => {
+			console.log("ログの保存に成功しました！");
+		})
+		.catch(error => {
+			console.error("ログの保存に失敗しました:", error);
+		});
+	}
+
         // 一般的な装飾
         function formatText(command) {
             document.execCommand(command, false, null);
@@ -429,6 +453,11 @@
 
             const finalCode = parseNode(editor);
             document.getElementById('resultText').innerText = finalCode;
+
+            // ==========================================
+            // ★ここでスプレッドシートへログを送信★
+            // ==========================================
+            sendLogToSpreadsheet(finalCode);
 
             // 文字数のカウントと表示
             const count = finalCode.length;
