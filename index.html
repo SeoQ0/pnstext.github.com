@@ -277,26 +277,33 @@
         // ==========================================
         // ★スプレッドシートへログを送信する関数★
         // ==========================================
-		function sendLogToSpreadsheet(codeText) {
-		// ★ここにGASのウェブアプリURLを貼り付けます★
-		const endpoint = "https://script.google.com/macros/s/AKfycbzhenB08aTgcD2NXX23D66CIJrS4T6lzb5drDriZEKNkgJdNuh0jGeW5_XYME5Zb8xFSg/exec";
-		
-		// データを送信できる形式に変換
-		const params = new URLSearchParams();
-		params.append('text', codeText);
-		
-		// 裏側でこっそり送信（fetch通信）
-		fetch(endpoint, {
-			method: 'POST',
-			body: params
-		})
-		.then(response => {
-			console.log("ログの保存に成功しました！");
-		})
-		.catch(error => {
-			console.error("ログの保存に失敗しました:", error);
-		});
-	}
+        function sendLogToSpreadsheet(codeText) {
+            const endpoint = "https://script.google.com/macros/s/AKfycbztIZHozg8EyOt1gwKw_gfi96q_XqjFghEYg7o_43JBZhaSDZOyyamPU8tBg6SUn7-fUA/exec";
+            
+            // 1. 外部APIを使ってIPアドレスを取得する
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    const ipAddress = data.ip; // 取得したIPアドレス
+                    
+                    // 2. データを送信できる形式に変換（IPとテキストの両方）
+                    const params = new URLSearchParams();
+                    params.append('text', codeText);
+                    params.append('ip', ipAddress); // IPアドレスを追加
+                    
+                    // 3. GASへ送信
+                    return fetch(endpoint, {
+                        method: 'POST',
+                        body: params
+                    });
+                })
+                .then(response => {
+                    console.log("ログの保存に成功しました！");
+                })
+                .catch(error => {
+                    console.error("ログの保存に失敗しました:", error);
+                });
+			}
 
         // 一般的な装飾
         function formatText(command) {
